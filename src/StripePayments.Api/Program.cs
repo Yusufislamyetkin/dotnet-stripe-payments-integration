@@ -26,9 +26,10 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+// Request logging wraps the exception handler so it records the final ProblemDetails status, not 500.
+app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
-app.UseSerilogRequestLogging();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseDefaultFiles();

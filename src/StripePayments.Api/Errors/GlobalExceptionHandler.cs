@@ -24,7 +24,7 @@ public sealed class GlobalExceptionHandler(IProblemDetailsService problemDetails
             _ => (StatusCodes.Status500InternalServerError, "Unexpected error")
         };
 
-        if (status >= 500)
+        if (status == StatusCodes.Status500InternalServerError)
             logger.LogError(exception, "Request failed with {Status}", status);
         else
             logger.LogWarning("Request failed with {Status}: {Message}", status, exception.Message);
