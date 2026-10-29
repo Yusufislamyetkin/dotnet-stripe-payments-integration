@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{87E4AA4C-3010-4D5A-B958-64CE5E199433}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StripePayments.Api", "src\StripePayments.Api\StripePayments.Api.csproj", "{9EDFA6EC-35C5-4D3D-A995-3347E12F491F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StripePayments.Application", "src\StripePayments.Application\StripePayments.Application.csproj", "{4BB117EB-2E65-438A-8C60-76D5E4D6CFCA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StripePayments.Domain", "src\StripePayments.Domain\StripePayments.Domain.csproj", "{48919A99-6AE8-4A4F-B1D8-144FE7B521E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StripePayments.Infrastructure", "src\StripePayments.Infrastructure\StripePayments.Infrastructure.csproj", "{D2C83F97-B05B-4747-AC6E-F0D349745DBE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5C3797B1-0839-46F9-BEB5-ADA9BE452263}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StripePayments.IntegrationTests", "tests\StripePayments.IntegrationTests\StripePayments.IntegrationTests.csproj", "{2F5C43B9-853E-4D5C-BF2B-DA340D098E45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StripePayments.UnitTests", "tests\StripePayments.UnitTests\StripePayments.UnitTests.csproj", "{68CC9ACF-B208-4EB5-AF9B-FE1F377B18EC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EDFA6EC-35C5-4D3D-A995-3347E12F491F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EDFA6EC-35C5-4D3D-A995-3347E12F491F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EDFA6EC-35C5-4D3D-A995-3347E12F491F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EDFA6EC-35C5-4D3D-A995-3347E12F491F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BB117EB-2E65-438A-8C60-76D5E4D6CFCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BB117EB-2E65-438A-8C60-76D5E4D6CFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BB117EB-2E65-438A-8C60-76D5E4D6CFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BB117EB-2E65-438A-8C60-76D5E4D6CFCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48919A99-6AE8-4A4F-B1D8-144FE7B521E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48919A99-6AE8-4A4F-B1D8-144FE7B521E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48919A99-6AE8-4A4F-B1D8-144FE7B521E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48919A99-6AE8-4A4F-B1D8-144FE7B521E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2C83F97-B05B-4747-AC6E-F0D349745DBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2C83F97-B05B-4747-AC6E-F0D349745DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2C83F97-B05B-4747-AC6E-F0D349745DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2C83F97-B05B-4747-AC6E-F0D349745DBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F5C43B9-853E-4D5C-BF2B-DA340D098E45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F5C43B9-853E-4D5C-BF2B-DA340D098E45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F5C43B9-853E-4D5C-BF2B-DA340D098E45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F5C43B9-853E-4D5C-BF2B-DA340D098E45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68CC9ACF-B208-4EB5-AF9B-FE1F377B18EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68CC9ACF-B208-4EB5-AF9B-FE1F377B18EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68CC9ACF-B208-4EB5-AF9B-FE1F377B18EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68CC9ACF-B208-4EB5-AF9B-FE1F377B18EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9EDFA6EC-35C5-4D3D-A995-3347E12F491F} = {87E4AA4C-3010-4D5A-B958-64CE5E199433}
+		{4BB117EB-2E65-438A-8C60-76D5E4D6CFCA} = {87E4AA4C-3010-4D5A-B958-64CE5E199433}
+		{48919A99-6AE8-4A4F-B1D8-144FE7B521E6} = {87E4AA4C-3010-4D5A-B958-64CE5E199433}
+		{D2C83F97-B05B-4747-AC6E-F0D349745DBE} = {87E4AA4C-3010-4D5A-B958-64CE5E199433}
+		{2F5C43B9-853E-4D5C-BF2B-DA340D098E45} = {5C3797B1-0839-46F9-BEB5-ADA9BE452263}
+		{68CC9ACF-B208-4EB5-AF9B-FE1F377B18EC} = {5C3797B1-0839-46F9-BEB5-ADA9BE452263}
+	EndGlobalSection
+EndGlobal
