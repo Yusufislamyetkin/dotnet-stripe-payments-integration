@@ -5,6 +5,7 @@ using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Common;
 using StripePayments.Application.Orders;
+using StripePayments.Application.Subscriptions;
 using StripePayments.Application.Webhooks;
 
 namespace StripePayments.Application;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<CheckoutService>();
         services.AddScoped<OrderQueries>();
         services.AddScoped<WebhookProcessor>();
+        services.AddScoped<SubscriptionManager>();
         return services;
     }
 }

@@ -23,7 +23,7 @@ public class WebhookProcessorTests
     }
 
     private static StripeEventEnvelope Completed(string eventId, string sessionId = "cs_1", string paymentStatus = "paid", long amount = 4500) =>
-        new(eventId, StripeEventTypes.CheckoutSessionCompleted, new CheckoutSessionCompleted(
+        new(eventId, StripeEventTypes.CheckoutSessionCompleted, DateTimeOffset.UtcNow, new CheckoutSessionCompleted(
             sessionId, "payment", paymentStatus, "pi_1", null, "cus_1", "buyer@example.com", amount,
             new Dictionary<string, string>()));
 
@@ -88,7 +88,7 @@ public class WebhookProcessorTests
     {
         await using var db = TestDb.Create();
 
-        var result = await Processor(db).ProcessAsync(new StripeEventEnvelope("evt_x", "customer.created", null), default);
+        var result = await Processor(db).ProcessAsync(new StripeEventEnvelope("evt_x", "customer.created", DateTimeOffset.UtcNow, null), default);
 
         Assert.Equal(WebhookResult.Ignored, result);
         var marker = await db.ProcessedStripeEvents.SingleAsync();

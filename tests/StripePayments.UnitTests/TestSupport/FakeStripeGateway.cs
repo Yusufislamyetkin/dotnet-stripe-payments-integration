@@ -6,6 +6,7 @@ public sealed class FakeStripeGateway : IStripeGateway
 {
     public bool IsConfigured { get; set; } = true;
     public List<CheckoutSessionSpec> Sessions { get; } = [];
+    public List<string> Calls { get; } = [];
 
     public Task<string> EnsurePriceAsync(PriceSpec spec, CancellationToken ct) => Task.FromResult($"price_{spec.LookupKey}");
 
@@ -14,5 +15,23 @@ public sealed class FakeStripeGateway : IStripeGateway
         Sessions.Add(spec);
         var id = $"cs_test_{Sessions.Count}";
         return Task.FromResult(new CheckoutSessionResult(id, $"https://checkout.stripe.test/{id}"));
+    }
+
+    public Task<string> CreateBillingPortalUrlAsync(string customerId, string returnUrl, CancellationToken ct)
+    {
+        Calls.Add($"portal:{customerId}");
+        return Task.FromResult($"https://billing.stripe.test/{customerId}");
+    }
+
+    public Task CancelSubscriptionAsync(string subscriptionId, bool atPeriodEnd, CancellationToken ct)
+    {
+        Calls.Add($"cancel:{subscriptionId}:{atPeriodEnd}");
+        return Task.CompletedTask;
+    }
+
+    public Task ChangeSubscriptionPriceAsync(string subscriptionId, string newPriceId, CancellationToken ct)
+    {
+        Calls.Add($"change:{subscriptionId}:{newPriceId}");
+        return Task.CompletedTask;
     }
 }

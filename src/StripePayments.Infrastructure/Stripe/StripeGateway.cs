@@ -54,9 +54,39 @@ public sealed class StripeGateway(IOptions<StripeOptions> options) : IStripeGate
 
         if (spec.Mode == CheckoutMode.Payment)
             create.PaymentIntentData = new SessionPaymentIntentDataOptions { Metadata = metadata };
+        else
+            create.SubscriptionData = new SessionSubscriptionDataOptions { TrialPeriodDays = spec.TrialDays, Metadata = metadata };
 
         var session = await new SessionService(Client).CreateAsync(create, cancellationToken: ct);
         return new CheckoutSessionResult(session.Id, session.Url);
+    });
+
+    public Task<string> CreateBillingPortalUrlAsync(string customerId, string returnUrl, CancellationToken ct) => Call(async () =>
+    {
+        var session = await new global::Stripe.BillingPortal.SessionService(Client).CreateAsync(
+            new global::Stripe.BillingPortal.SessionCreateOptions { Customer = customerId, ReturnUrl = returnUrl },
+            cancellationToken: ct);
+        return session.Url;
+    });
+
+    public Task CancelSubscriptionAsync(string subscriptionId, bool atPeriodEnd, CancellationToken ct) => Call(async () =>
+    {
+        var subscriptions = new SubscriptionService(Client);
+        return atPeriodEnd
+            ? await subscriptions.UpdateAsync(subscriptionId, new SubscriptionUpdateOptions { CancelAtPeriodEnd = true }, cancellationToken: ct)
+            : await subscriptions.CancelAsync(subscriptionId, cancellationToken: ct);
+    });
+
+    public Task ChangeSubscriptionPriceAsync(string subscriptionId, string newPriceId, CancellationToken ct) => Call(async () =>
+    {
+        var subscriptions = new SubscriptionService(Client);
+        var current = await subscriptions.GetAsync(subscriptionId, cancellationToken: ct);
+        return await subscriptions.UpdateAsync(subscriptionId, new SubscriptionUpdateOptions
+        {
+            Items = [new SubscriptionItemOptions { Id = current.Items.Data[0].Id, Price = newPriceId }],
+            ProrationBehavior = "create_prorations",
+            CancelAtPeriodEnd = false
+        }, cancellationToken: ct);
     });
 
     private static async Task<T> Call<T>(Func<Task<T>> action)

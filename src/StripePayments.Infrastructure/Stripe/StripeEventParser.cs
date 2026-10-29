@@ -29,7 +29,7 @@ public sealed class StripeEventParser(IOptions<StripeOptions> options) : IStripe
             throw new InvalidWebhookSignatureException(ex.Message);
         }
 
-        return new StripeEventEnvelope(e.Id, e.Type, Map(e));
+        return new StripeEventEnvelope(e.Id, e.Type, ToUtc(e.Created), Map(e));
     }
 
     private static object? Map(Event e) => (e.Type, e.Data.Object) switch
@@ -38,8 +38,21 @@ public sealed class StripeEventParser(IOptions<StripeOptions> options) : IStripe
             s.Id, s.Mode, s.PaymentStatus, s.PaymentIntentId, s.SubscriptionId, s.CustomerId,
             s.CustomerDetails?.Email ?? s.CustomerEmail, s.AmountTotal,
             s.Metadata ?? new Dictionary<string, string>()),
+
+        (StripeEventTypes.SubscriptionCreated or StripeEventTypes.SubscriptionUpdated or StripeEventTypes.SubscriptionDeleted,
+            Subscription s) => new SubscriptionChanged(
+            s.Id, s.CustomerId, s.Status, s.Items?.Data.FirstOrDefault()?.Price?.Id,
+            ToUtc(s.CurrentPeriodEnd), ToUtc(s.TrialEnd), s.CancelAtPeriodEnd, ToUtc(s.CanceledAt)),
+
+        (StripeEventTypes.InvoicePaid or StripeEventTypes.InvoicePaymentFailed, Invoice i) => new InvoiceEvent(
+            i.Id, i.SubscriptionId, i.CustomerId, i.AmountPaid, i.AmountDue),
+
         _ => null
     };
+
+    private static DateTimeOffset ToUtc(DateTime value) => new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
+
+    private static DateTimeOffset? ToUtc(DateTime? value) => value is { } v ? ToUtc(v) : null;
 
     private string ResolveSecret()
     {

@@ -2,7 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Checkout;
+using StripePayments.Application.Subscriptions;
+using StripePayments.Domain.Customers;
 using StripePayments.Domain.Orders;
+using StripePayments.Domain.Subscriptions;
 using StripePayments.Domain.Webhooks;
 
 namespace StripePayments.Application.Webhooks;
@@ -15,6 +18,8 @@ public enum WebhookResult { Processed, Duplicate, Ignored }
 /// </summary>
 public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogger<WebhookProcessor> logger)
 {
+    private DateTimeOffset Now => clock.GetUtcNow();
+
     public async Task<WebhookResult> ProcessAsync(StripeEventEnvelope evt, CancellationToken ct)
     {
         if (await db.ProcessedStripeEvents.AnyAsync(e => e.EventId == evt.Id, ct))
@@ -26,10 +31,13 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
         var handled = evt.Data switch
         {
             CheckoutSessionCompleted e => await OnCheckoutCompleted(e, ct),
+            SubscriptionChanged e => await OnSubscriptionChanged(e, evt.Created, ct),
+            InvoiceEvent e when evt.Type == StripeEventTypes.InvoicePaid => await OnInvoice(e, paid: true, ct),
+            InvoiceEvent e when evt.Type == StripeEventTypes.InvoicePaymentFailed => await OnInvoice(e, paid: false, ct),
             _ => false
         };
 
-        db.ProcessedStripeEvents.Add(ProcessedStripeEvent.Create(evt.Id, evt.Type, handled, clock.GetUtcNow()));
+        db.ProcessedStripeEvents.Add(ProcessedStripeEvent.Create(evt.Id, evt.Type, handled, Now));
         try
         {
             await db.SaveChangesAsync(ct);
@@ -50,9 +58,19 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
 
     private async Task<bool> OnCheckoutCompleted(CheckoutSessionCompleted e, CancellationToken ct)
     {
-        if (e.Mode != "payment")
-            return false;
+        if (e.CustomerId is not null)
+            await UpsertCustomer(e.CustomerId, e.CustomerEmail, ct);
 
+        return e.Mode switch
+        {
+            "payment" => await CompleteOrder(e, ct),
+            "subscription" when e.SubscriptionId is not null && e.CustomerId is not null => await AttachSubscriptionCheckout(e, ct),
+            _ => false
+        };
+    }
+
+    private async Task<bool> CompleteOrder(CheckoutSessionCompleted e, CancellationToken ct)
+    {
         var order = await FindOrder(e, ct);
         if (order is null)
         {
@@ -66,7 +84,70 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
             return false;
         }
 
-        return order.MarkPaid(e.PaymentIntentId, e.AmountTotal ?? order.Amount, e.CustomerEmail, clock.GetUtcNow());
+        return order.MarkPaid(e.PaymentIntentId, e.AmountTotal ?? order.Amount, e.CustomerEmail, Now);
+    }
+
+    private async Task<bool> AttachSubscriptionCheckout(CheckoutSessionCompleted e, CancellationToken ct)
+    {
+        var subscription = await GetOrCreateSubscription(e.SubscriptionId!, e.CustomerId!, ct);
+        e.Metadata.TryGetValue(SubscriptionManager.PlanCodeMetadataKey, out var planCode);
+        subscription.AttachCheckout(e.CustomerEmail, planCode, Now);
+        return true;
+    }
+
+    private async Task<bool> OnSubscriptionChanged(SubscriptionChanged e, DateTimeOffset eventCreated, CancellationToken ct)
+    {
+        var subscription = await GetOrCreateSubscription(e.SubscriptionId, e.CustomerId, ct);
+        var planCode = e.PriceId is null
+            ? null
+            : await db.Plans.Where(p => p.StripePriceId == e.PriceId).Select(p => p.Code).FirstOrDefaultAsync(ct);
+
+        var applied = subscription.Sync(new SubscriptionSnapshot(
+            Subscription.ParseStatus(e.Status), e.PriceId, planCode, e.CurrentPeriodEnd, e.TrialEnd,
+            e.CancelAtPeriodEnd, e.CanceledAt), eventCreated, Now);
+
+        if (!applied)
+            logger.LogInformation("Ignoring out-of-order snapshot for subscription {SubscriptionId}", e.SubscriptionId);
+        return applied;
+    }
+
+    private async Task<bool> OnInvoice(InvoiceEvent e, bool paid, CancellationToken ct)
+    {
+        if (e.SubscriptionId is null)
+            return false;
+
+        var subscription = await db.Subscriptions.SingleOrDefaultAsync(s => s.StripeSubscriptionId == e.SubscriptionId, ct);
+        if (subscription is null && e.CustomerId is not null)
+            subscription = await GetOrCreateSubscription(e.SubscriptionId, e.CustomerId, ct);
+        if (subscription is null)
+            return false;
+
+        if (paid)
+            subscription.RecordPayment(Now);
+        else
+            subscription.RecordPaymentFailure(Now);
+        return true;
+    }
+
+    private async Task<Subscription> GetOrCreateSubscription(string subscriptionId, string customerId, CancellationToken ct)
+    {
+        var subscription = db.Subscriptions.Local.FirstOrDefault(s => s.StripeSubscriptionId == subscriptionId)
+            ?? await db.Subscriptions.SingleOrDefaultAsync(s => s.StripeSubscriptionId == subscriptionId, ct);
+        if (subscription is null)
+        {
+            subscription = Subscription.Create(subscriptionId, customerId, Now);
+            db.Subscriptions.Add(subscription);
+        }
+        return subscription;
+    }
+
+    private async Task UpsertCustomer(string stripeCustomerId, string? email, CancellationToken ct)
+    {
+        var customer = await db.Customers.SingleOrDefaultAsync(c => c.StripeCustomerId == stripeCustomerId, ct);
+        if (customer is null)
+            db.Customers.Add(Customer.Create(stripeCustomerId, email, Now));
+        else
+            customer.UpdateEmail(email);
     }
 
     private async Task<Order?> FindOrder(CheckoutSessionCompleted e, CancellationToken ct)
