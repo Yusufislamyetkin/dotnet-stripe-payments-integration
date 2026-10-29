@@ -2,7 +2,7 @@ using StripePayments.Application.Abstractions;
 using StripePayments.Application.Catalog;
 using StripePayments.Application.Coupons;
 
-namespace StripePayments.UnitTests.TestSupport;
+namespace StripePayments.Tests.Shared;
 
 public sealed class FakeStripeGateway : IStripeGateway
 {

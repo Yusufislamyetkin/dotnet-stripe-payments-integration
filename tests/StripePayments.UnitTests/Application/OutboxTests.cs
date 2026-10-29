@@ -9,6 +9,7 @@ using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Orders;
 using StripePayments.Domain.Outbox;
 using StripePayments.Infrastructure.Persistence;
+using StripePayments.Tests.Shared;
 using StripePayments.UnitTests.TestSupport;
 
 namespace StripePayments.UnitTests.Application;

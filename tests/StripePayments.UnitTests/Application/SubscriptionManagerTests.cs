@@ -6,6 +6,7 @@ using StripePayments.Application.Subscriptions;
 using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Subscriptions;
 using StripePayments.Infrastructure.Persistence;
+using StripePayments.Tests.Shared;
 using StripePayments.UnitTests.TestSupport;
 
 namespace StripePayments.UnitTests.Application;

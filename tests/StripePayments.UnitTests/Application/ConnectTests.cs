@@ -9,6 +9,7 @@ using StripePayments.Application.Webhooks;
 using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Connect;
 using StripePayments.Infrastructure.Persistence;
+using StripePayments.Tests.Shared;
 using StripePayments.UnitTests.TestSupport;
 
 namespace StripePayments.UnitTests.Application;

@@ -7,6 +7,7 @@ using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
 using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Orders;
+using StripePayments.Tests.Shared;
 using StripePayments.UnitTests.TestSupport;
 
 namespace StripePayments.UnitTests.Application;
