@@ -125,6 +125,28 @@ namespace StripePayments.Infrastructure.Persistence.Migrations
 
                     b.ToTable("orders", (string)null);
                 });
+
+            modelBuilder.Entity("StripePayments.Domain.Webhooks.ProcessedStripeEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("Handled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("processed_stripe_events", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }

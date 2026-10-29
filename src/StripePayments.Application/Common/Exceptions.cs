@@ -7,8 +7,8 @@ public sealed class NotFoundException(string resource, object key)
 
 public sealed class ConflictException(string message) : AppException(message);
 
-public sealed class StripeNotConfiguredException()
-    : AppException("Stripe is not configured. Set Stripe__SecretKey to a TEST key (sk_test_...) via `dotnet user-secrets` or the .env file. See README > Quick start.");
+public sealed class StripeNotConfiguredException(string? message = null)
+    : AppException(message ?? "Stripe is not configured. Set Stripe__SecretKey to a TEST key (sk_test_...) via `dotnet user-secrets` or the .env file. See README > Quick start.");
 
 public sealed class InvalidWebhookSignatureException(string message) : AppException(message);
 

@@ -24,6 +24,7 @@ public static class DependencyInjection
                 "Stripe:SecretKey must be a TEST key (sk_test_... or rk_test_...). Live keys are refused by design.")
             .ValidateOnStart();
         services.AddSingleton<IStripeGateway, StripeGateway>();
+        services.AddSingleton<IStripeEventParser, StripeEventParser>();
 
         services.AddHostedService<DatabaseInitializer>();
         return services;

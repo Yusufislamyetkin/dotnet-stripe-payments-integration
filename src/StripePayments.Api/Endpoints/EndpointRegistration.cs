@@ -1,6 +1,8 @@
+using StripePayments.Application.Abstractions;
 using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Orders;
+using StripePayments.Application.Webhooks;
 
 namespace StripePayments.Api.Endpoints;
 
@@ -22,6 +24,22 @@ public static class EndpointRegistration
         orders.MapGet("/", (OrderQueries q, CancellationToken ct, int take = 50) => q.ListAsync(take, ct));
         orders.MapGet("/{id:guid}", (Guid id, OrderQueries q, CancellationToken ct) => q.GetAsync(id, ct));
 
+        api.MapPost("/webhooks/stripe", HandleStripeWebhook)
+            .WithTags("Webhooks")
+            .WithSummary("Stripe webhook receiver (signature verified, idempotent)");
+
         return app;
+    }
+
+    private static async Task<IResult> HandleStripeWebhook(
+        HttpRequest request, IStripeEventParser parser, WebhookProcessor processor, CancellationToken ct)
+    {
+        // Signature verification needs the exact raw body, so it is read as a string, not model-bound.
+        using var reader = new StreamReader(request.Body);
+        var json = await reader.ReadToEndAsync(ct);
+
+        var evt = parser.Parse(json, request.Headers["Stripe-Signature"]);
+        var result = await processor.ProcessAsync(evt, ct);
+        return Results.Ok(new { eventId = evt.Id, result = result.ToString() });
     }
 }
