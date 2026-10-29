@@ -1,0 +1,77 @@
+{
+  "name": "Stripe order.paid -> Google Sheets (dotnet-stripe-payments-integration)",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": null,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": 0, "y": 0 },
+        "restore": {},
+        "parameters": [
+          { "name": "hook", "type": "hook:gateway-webhook", "label": "Webhook", "required": true },
+          { "name": "maxResults", "type": "number", "label": "Maximum number of results" }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "google-sheets:addRow",
+      "version": 2,
+      "parameters": {
+        "__IMTCONN__": null
+      },
+      "filter": {
+        "name": "Only order.paid",
+        "conditions": [
+          [
+            { "a": "{{1.type}}", "b": "order.paid", "o": "text:equal" }
+          ]
+        ]
+      },
+      "mapper": {
+        "mode": "select",
+        "insertUnformatted": false,
+        "valueInputOption": "USER_ENTERED",
+        "insertDataOption": "INSERT_ROWS",
+        "values": {
+          "0": "{{1.id}}",
+          "1": "{{1.data.orderId}}",
+          "2": "{{1.data.productName}}",
+          "3": "{{1.data.amount / 100}}",
+          "4": "{{upper(1.data.currency)}}",
+          "5": "{{1.data.customerEmail}}",
+          "6": "{{1.data.promotionCode}}",
+          "7": "{{1.data.paidAt}}"
+        }
+      },
+      "metadata": {
+        "designer": { "x": 300, "y": 0 },
+        "restore": {},
+        "parameters": [
+          { "name": "__IMTCONN__", "type": "account:google", "label": "Connection", "required": true }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false
+    },
+    "designer": { "orphans": [] }
+  }
+}
