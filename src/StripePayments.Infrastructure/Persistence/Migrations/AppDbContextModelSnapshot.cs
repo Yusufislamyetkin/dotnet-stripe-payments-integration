@@ -109,6 +109,45 @@ namespace StripePayments.Infrastructure.Persistence.Migrations
                     b.ToTable("products", (string)null);
                 });
 
+            modelBuilder.Entity("StripePayments.Domain.Connect.ConnectedAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("ChargesEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("DetailsSubmitted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<bool>("PayoutsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("StripeAccountId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StripeAccountId")
+                        .IsUnique();
+
+                    b.ToTable("connected_accounts", (string)null);
+                });
+
             modelBuilder.Entity("StripePayments.Domain.Customers.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -147,7 +186,14 @@ namespace StripePayments.Infrastructure.Persistence.Migrations
                     b.Property<long>("AmountRefunded")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("ApplicationFeeAmount")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("CheckoutSessionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("ConnectedAccountId")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 

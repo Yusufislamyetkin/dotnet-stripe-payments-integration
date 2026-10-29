@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using StripePayments.Application.Abstractions;
 using StripePayments.Domain.Catalog;
+using StripePayments.Domain.Connect;
 using StripePayments.Domain.Customers;
 using StripePayments.Domain.Orders;
 using StripePayments.Domain.Subscriptions;
@@ -16,6 +17,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<Refund> Refunds => Set<Refund>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<ConnectedAccount> ConnectedAccounts => Set<ConnectedAccount>();
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>

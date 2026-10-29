@@ -5,6 +5,7 @@ using StripePayments.Application.Abstractions;
 using StripePayments.Application.Catalog;
 using StripePayments.Application.Common;
 using StripePayments.Application.Coupons;
+using BalanceAmount = StripePayments.Application.Abstractions.BalanceAmount;
 
 namespace StripePayments.Infrastructure.Stripe;
 
@@ -60,7 +61,14 @@ public sealed class StripeGateway(IOptions<StripeOptions> options) : IStripeGate
             create.Discounts = [new SessionDiscountOptions { PromotionCode = spec.PromotionCodeId }];
 
         if (spec.Mode == CheckoutMode.Payment)
-            create.PaymentIntentData = new SessionPaymentIntentDataOptions { Metadata = metadata };
+            create.PaymentIntentData = new SessionPaymentIntentDataOptions
+            {
+                Metadata = metadata,
+                ApplicationFeeAmount = spec.DestinationAccountId is null ? null : spec.ApplicationFeeAmount,
+                TransferData = spec.DestinationAccountId is null
+                    ? null
+                    : new SessionPaymentIntentDataTransferDataOptions { Destination = spec.DestinationAccountId }
+            };
         else
             create.SubscriptionData = new SessionSubscriptionDataOptions { TrialPeriodDays = spec.TrialDays, Metadata = metadata };
 
@@ -103,6 +111,49 @@ public sealed class StripeGateway(IOptions<StripeOptions> options) : IStripeGate
             new RequestOptions { IdempotencyKey = idempotencyKey },
             ct);
         return new RefundResult(refund.Id, refund.Status);
+    });
+
+    public Task<string> CreateExpressAccountAsync(string email, CancellationToken ct) => Call(async () =>
+    {
+        var account = await new AccountService(Client).CreateAsync(new AccountCreateOptions
+        {
+            Type = "express",
+            Email = email,
+            Capabilities = new AccountCapabilitiesOptions
+            {
+                CardPayments = new AccountCapabilitiesCardPaymentsOptions { Requested = true },
+                Transfers = new AccountCapabilitiesTransfersOptions { Requested = true }
+            }
+        }, cancellationToken: ct);
+        return account.Id;
+    });
+
+    public Task<string> CreateAccountOnboardingLinkAsync(string accountId, string refreshUrl, string returnUrl, CancellationToken ct) => Call(async () =>
+    {
+        var link = await new AccountLinkService(Client).CreateAsync(new AccountLinkCreateOptions
+        {
+            Account = accountId,
+            RefreshUrl = refreshUrl,
+            ReturnUrl = returnUrl,
+            Type = "account_onboarding"
+        }, cancellationToken: ct);
+        return link.Url;
+    });
+
+    public Task<(IReadOnlyList<BalanceAmount> Available, IReadOnlyList<BalanceAmount> Pending)> GetBalanceAsync(string accountId, CancellationToken ct) => Call(async () =>
+    {
+        var balance = await new BalanceService(Client).GetAsync(new RequestOptions { StripeAccount = accountId }, ct);
+        return ((IReadOnlyList<BalanceAmount>)balance.Available.Select(b => new BalanceAmount(b.Amount, b.Currency)).ToList(),
+            (IReadOnlyList<BalanceAmount>)balance.Pending.Select(b => new BalanceAmount(b.Amount, b.Currency)).ToList());
+    });
+
+    public Task<IReadOnlyList<PayoutInfo>> ListPayoutsAsync(string accountId, int limit, CancellationToken ct) => Call(async () =>
+    {
+        var payouts = await new PayoutService(Client).ListAsync(new PayoutListOptions { Limit = limit },
+            new RequestOptions { StripeAccount = accountId }, ct);
+        return (IReadOnlyList<PayoutInfo>)payouts.Data
+            .Select(p => new PayoutInfo(p.Id, p.Amount, p.Currency, p.Status, new DateTimeOffset(DateTime.SpecifyKind(p.ArrivalDate, DateTimeKind.Utc))))
+            .ToList();
     });
 
     public Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct) => Call(async () =>

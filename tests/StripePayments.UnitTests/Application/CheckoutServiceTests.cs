@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Common;
+using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
 using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Orders;
@@ -15,7 +16,7 @@ public class CheckoutServiceTests
     private readonly FakeStripeGateway _stripe = new();
 
     private CheckoutService CreateService(StripePayments.Infrastructure.Persistence.AppDbContext db) =>
-        new(db, _stripe, new CouponService(db, _stripe, TimeProvider.System), Options.Create(new AppOptions { PublicBaseUrl = "https://shop.test/" }), TimeProvider.System);
+        new(db, _stripe, new CouponService(db, _stripe, TimeProvider.System), Options.Create(new AppOptions { PublicBaseUrl = "https://shop.test/" }), Options.Create(new ConnectOptions()), TimeProvider.System);
 
     [Fact]
     public async Task Creates_pending_order_linked_to_checkout_session()

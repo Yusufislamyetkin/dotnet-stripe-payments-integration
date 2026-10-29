@@ -34,6 +34,10 @@ public sealed class Order
     public string? CheckoutSessionId { get; private set; }
     public string? PaymentIntentId { get; private set; }
 
+    /// <summary>Stripe Connect account receiving the funds (destination charge), if any.</summary>
+    public string? ConnectedAccountId { get; private set; }
+    public long? ApplicationFeeAmount { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
     public DateTimeOffset? PaidAt { get; private set; }
@@ -53,6 +57,17 @@ public sealed class Order
         CreatedAt = now,
         UpdatedAt = now
     };
+
+    public void RouteToConnectedAccount(string stripeAccountId, long applicationFeeAmount)
+    {
+        if (Status != OrderStatus.Pending || CheckoutSessionId is not null)
+            throw new DomainException("Destination can only be set before checkout starts.");
+        if (applicationFeeAmount < 0 || applicationFeeAmount > Amount)
+            throw new DomainException($"Application fee {applicationFeeAmount} is outside 0..{Amount}.");
+
+        ConnectedAccountId = stripeAccountId;
+        ApplicationFeeAmount = applicationFeeAmount;
+    }
 
     public void AttachCheckoutSession(string sessionId)
     {

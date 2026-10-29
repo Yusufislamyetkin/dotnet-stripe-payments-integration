@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Common;
+using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
 using StripePayments.Domain.Catalog;
 using StripePayments.UnitTests.TestSupport;
@@ -75,7 +76,7 @@ public class CouponTests
         var stripe = new FakeStripeGateway();
         stripe.PromotionCodes["WELCOME10"] = Promo(percent: 10);
         var checkout = new CheckoutService(db, stripe, new CouponService(db, stripe, TimeProvider.System),
-            Options.Create(new AppOptions()), TimeProvider.System);
+            Options.Create(new AppOptions()), Options.Create(new ConnectOptions()), TimeProvider.System);
 
         await checkout.CreateOneTimeAsync(new OneTimeCheckoutRequest("sku-1", null, "WELCOME10"), default);
 
@@ -93,7 +94,7 @@ public class CouponTests
         await db.SaveChangesAsync();
         var stripe = new FakeStripeGateway();
         var checkout = new CheckoutService(db, stripe, new CouponService(db, stripe, TimeProvider.System),
-            Options.Create(new AppOptions()), TimeProvider.System);
+            Options.Create(new AppOptions()), Options.Create(new ConnectOptions()), TimeProvider.System);
 
         await Assert.ThrowsAsync<ValidationException>(() =>
             checkout.CreateOneTimeAsync(new OneTimeCheckoutRequest("sku-1", null, "NOPE"), default));

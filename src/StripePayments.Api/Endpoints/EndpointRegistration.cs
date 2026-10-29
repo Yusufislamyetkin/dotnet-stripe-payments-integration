@@ -1,6 +1,7 @@
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
+using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
 using StripePayments.Application.Orders;
 using StripePayments.Application.Refunds;
@@ -59,6 +60,15 @@ public static class EndpointRegistration
         subscriptions.MapPost("/{id:guid}/portal", (Guid id, SubscriptionManager m, CancellationToken ct) =>
                 m.CreatePortalLinkAsync(id, ct))
             .WithSummary("Returns a Stripe Customer Portal link");
+
+        var connect = api.MapGroup("/connect/accounts").WithTags("Connect");
+        connect.MapGet("/", (ConnectService s, CancellationToken ct) => s.ListAsync(ct));
+        connect.MapPost("/", (CreateConnectedAccountRequest request, ConnectService s, CancellationToken ct) => s.CreateAccountAsync(request, ct))
+            .Validate<CreateConnectedAccountRequest>()
+            .WithSummary("Creates an Express account and returns its onboarding link");
+        connect.MapPost("/{id:guid}/onboarding-link", (Guid id, ConnectService s, CancellationToken ct) => s.CreateOnboardingLinkAsync(id, ct));
+        connect.MapGet("/{id:guid}/payouts", (Guid id, ConnectService s, CancellationToken ct) => s.GetPayoutStatusAsync(id, ct))
+            .WithSummary("Live balance and recent payouts of the connected account");
 
         api.MapPost("/webhooks/stripe", HandleStripeWebhook)
             .WithTags("Webhooks")

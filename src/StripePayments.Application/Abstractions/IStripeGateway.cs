@@ -25,6 +25,15 @@ public interface IStripeGateway
 
     Task<RefundResult> CreateRefundAsync(string paymentIntentId, long amount, string? reason, string idempotencyKey, CancellationToken ct);
 
+    /// <summary>Creates a Connect Express account with card_payments and transfers capabilities.</summary>
+    Task<string> CreateExpressAccountAsync(string email, CancellationToken ct);
+
+    Task<string> CreateAccountOnboardingLinkAsync(string accountId, string refreshUrl, string returnUrl, CancellationToken ct);
+
+    Task<(IReadOnlyList<BalanceAmount> Available, IReadOnlyList<BalanceAmount> Pending)> GetBalanceAsync(string accountId, CancellationToken ct);
+
+    Task<IReadOnlyList<PayoutInfo>> ListPayoutsAsync(string accountId, int limit, CancellationToken ct);
+
     /// <summary>Looks up a customer-facing promotion code (case-sensitive, as in Stripe).</summary>
     Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct);
 
@@ -48,7 +57,15 @@ public sealed record CheckoutSessionSpec(
 
     /// <summary>Pre-applied promotion code. When null, Checkout shows its own promotion code field.</summary>
     public string? PromotionCodeId { get; init; }
+
+    /// <summary>Connect destination charge: funds go to this account minus <see cref="ApplicationFeeAmount"/>.</summary>
+    public string? DestinationAccountId { get; init; }
+    public long? ApplicationFeeAmount { get; init; }
 }
+
+public sealed record BalanceAmount(long Amount, string Currency);
+
+public sealed record PayoutInfo(string Id, long Amount, string Currency, string Status, DateTimeOffset ArrivalDate);
 
 public sealed record CheckoutSessionResult(string SessionId, string Url);
 

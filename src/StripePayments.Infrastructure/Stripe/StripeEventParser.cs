@@ -49,6 +49,8 @@ public sealed class StripeEventParser(IOptions<StripeOptions> options) : IStripe
 
         (StripeEventTypes.ChargeRefunded, Charge c) => new ChargeRefunded(c.Id, c.PaymentIntentId, c.Amount, c.AmountRefunded),
 
+        (StripeEventTypes.AccountUpdated, Account a) => new AccountUpdated(a.Id, a.ChargesEnabled, a.PayoutsEnabled, a.DetailsSubmitted),
+
         _ => null
     };
 

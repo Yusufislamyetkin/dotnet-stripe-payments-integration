@@ -3,12 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Common;
+using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
 using StripePayments.Domain.Orders;
 
 namespace StripePayments.Application.Checkout;
 
-public sealed record OneTimeCheckoutRequest(string Sku, string? Email, string? PromotionCode = null);
+/// <param name="ConnectedAccountId">Optional seller (local id). When set, a destination charge with a platform fee is created.</param>
+public sealed record OneTimeCheckoutRequest(string Sku, string? Email, string? PromotionCode = null, Guid? ConnectedAccountId = null);
 
 public sealed record CheckoutResponse(Guid? OrderId, string SessionId, string Url);
 
@@ -27,6 +29,7 @@ public sealed class CheckoutService(
     IStripeGateway stripe,
     CouponService coupons,
     IOptions<AppOptions> app,
+    IOptions<ConnectOptions> connect,
     TimeProvider clock)
 {
     public const string OrderIdMetadataKey = "order_id";
@@ -40,11 +43,21 @@ public sealed class CheckoutService(
         if (product.StripePriceId is null)
             throw new ConflictException($"Product '{product.Sku}' is not synced with Stripe yet. Restart the API with a valid Stripe key.");
 
-        var promotionCodeId = string.IsNullOrEmpty(request.PromotionCode)
+        var coupon = string.IsNullOrEmpty(request.PromotionCode)
             ? null
             : await coupons.ResolveForCheckoutAsync(request.PromotionCode, product.UnitAmount, product.Currency, ct);
 
         var order = Order.CreatePending(product, request.Email, request.PromotionCode, clock.GetUtcNow());
+
+        if (request.ConnectedAccountId is { } accountId)
+        {
+            var seller = await db.ConnectedAccounts.AsNoTracking().SingleOrDefaultAsync(a => a.Id == accountId, ct)
+                ?? throw new NotFoundException("Connected account", accountId);
+            if (!seller.ChargesEnabled)
+                throw new ConflictException("Connected account has not finished onboarding (charges are not enabled yet).");
+
+            order.RouteToConnectedAccount(seller.StripeAccountId, connect.Value.CalculateFee(coupon?.FinalAmount ?? product.UnitAmount));
+        }
 
         var session = await stripe.CreateCheckoutSessionAsync(new CheckoutSessionSpec(
             CheckoutMode.Payment,
@@ -54,7 +67,9 @@ public sealed class CheckoutService(
             CancelUrl(),
             new Dictionary<string, string> { [OrderIdMetadataKey] = order.Id.ToString() })
         {
-            PromotionCodeId = promotionCodeId
+            PromotionCodeId = coupon?.PromotionCodeId,
+            DestinationAccountId = order.ConnectedAccountId,
+            ApplicationFeeAmount = order.ApplicationFeeAmount
         }, ct);
 
         order.AttachCheckoutSession(session.SessionId);

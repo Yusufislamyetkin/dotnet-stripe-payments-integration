@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Common;
+using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
 using StripePayments.Application.Orders;
 using StripePayments.Application.Refunds;
@@ -18,6 +19,7 @@ public static class DependencyInjection
     {
         services.Configure<AppOptions>(configuration.GetSection(AppOptions.Section));
         services.Configure<CatalogOptions>(configuration.GetSection(CatalogOptions.Section));
+        services.Configure<ConnectOptions>(configuration.GetSection(ConnectOptions.Section));
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddSingleton(TimeProvider.System);
@@ -29,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<SubscriptionManager>();
         services.AddScoped<CouponService>();
         services.AddScoped<RefundService>();
+        services.AddScoped<ConnectService>();
         return services;
     }
 }

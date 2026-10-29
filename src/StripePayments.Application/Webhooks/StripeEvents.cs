@@ -12,7 +12,10 @@ public static class StripeEventTypes
     public const string SubscriptionUpdated = "customer.subscription.updated";
     public const string SubscriptionDeleted = "customer.subscription.deleted";
     public const string ChargeRefunded = "charge.refunded";
+    public const string AccountUpdated = "account.updated";
 }
+
+public sealed record AccountUpdated(string AccountId, bool ChargesEnabled, bool PayoutsEnabled, bool DetailsSubmitted);
 
 /// <param name="AmountRefunded">Cumulative refunded amount on the charge.</param>
 public sealed record ChargeRefunded(string ChargeId, string? PaymentIntentId, long Amount, long AmountRefunded);

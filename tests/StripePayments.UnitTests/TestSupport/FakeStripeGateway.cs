@@ -39,6 +39,17 @@ public sealed class FakeStripeGateway : IStripeGateway
         return Task.FromResult(new RefundResult($"re_{Refunds.Count}", "succeeded"));
     }
 
+    public Task<string> CreateExpressAccountAsync(string email, CancellationToken ct) => Task.FromResult("acct_test_1");
+
+    public Task<string> CreateAccountOnboardingLinkAsync(string accountId, string refreshUrl, string returnUrl, CancellationToken ct) =>
+        Task.FromResult($"https://connect.stripe.test/{accountId}?return={Uri.EscapeDataString(returnUrl)}");
+
+    public Task<(IReadOnlyList<BalanceAmount> Available, IReadOnlyList<BalanceAmount> Pending)> GetBalanceAsync(string accountId, CancellationToken ct) =>
+        Task.FromResult<(IReadOnlyList<BalanceAmount>, IReadOnlyList<BalanceAmount>)>(([new BalanceAmount(1000, "usd")], [new BalanceAmount(500, "usd")]));
+
+    public Task<IReadOnlyList<PayoutInfo>> ListPayoutsAsync(string accountId, int limit, CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<PayoutInfo>>([new PayoutInfo("po_1", 1000, "usd", "paid", DateTimeOffset.UtcNow)]);
+
     public Dictionary<string, PromotionCodeInfo> PromotionCodes { get; } = [];
 
     public Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct) =>

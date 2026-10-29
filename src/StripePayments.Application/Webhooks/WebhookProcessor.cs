@@ -35,6 +35,7 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
             InvoiceEvent e when evt.Type == StripeEventTypes.InvoicePaid => await OnInvoice(e, paid: true, ct),
             InvoiceEvent e when evt.Type == StripeEventTypes.InvoicePaymentFailed => await OnInvoice(e, paid: false, ct),
             ChargeRefunded e => await OnChargeRefunded(e, ct),
+            AccountUpdated e => await OnAccountUpdated(e, ct),
             _ => false
         };
 
@@ -145,6 +146,13 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
         var before = order.AmountRefunded;
         order.ApplyRefundedTotal(e.AmountRefunded, Now);
         return order.AmountRefunded != before;
+    }
+
+    private async Task<bool> OnAccountUpdated(AccountUpdated e, CancellationToken ct)
+    {
+        var account = await db.ConnectedAccounts.SingleOrDefaultAsync(a => a.StripeAccountId == e.AccountId, ct);
+        account?.UpdateCapabilities(e.ChargesEnabled, e.PayoutsEnabled, e.DetailsSubmitted, Now);
+        return account is not null;
     }
 
     private async Task<Subscription> GetOrCreateSubscription(string subscriptionId, string customerId, CancellationToken ct)

@@ -27,12 +27,12 @@ public sealed class CouponService(IAppDbContext db, IStripeGateway stripe, TimeP
         return await EvaluateAsync(request.Code, amount, currency, ct);
     }
 
-    /// <summary>Returns the Stripe promotion code id to apply, or throws a 400 with the reason.</summary>
-    public async Task<string> ResolveForCheckoutAsync(string code, long amount, string currency, CancellationToken ct)
+    /// <summary>Returns the valid evaluation (with the promotion code id to apply), or throws a 400 with the reason.</summary>
+    public async Task<CouponValidationResult> ResolveForCheckoutAsync(string code, long amount, string currency, CancellationToken ct)
     {
         var result = await EvaluateAsync(code, amount, currency, ct);
-        return result is { Valid: true, PromotionCodeId: { } id }
-            ? id
+        return result is { Valid: true, PromotionCodeId: not null }
+            ? result
             : throw new ValidationException([new ValidationFailure("PromotionCode", result.Reason)]);
     }
 

@@ -63,7 +63,7 @@ public sealed class SubscriptionManager(IAppDbContext db, IStripeGateway stripe,
         var plan = await GetSyncedPlan(request.PlanCode, ct);
         var promotionCodeId = string.IsNullOrEmpty(request.PromotionCode)
             ? null
-            : await coupons.ResolveForCheckoutAsync(request.PromotionCode, plan.Amount, plan.Currency, ct);
+            : (await coupons.ResolveForCheckoutAsync(request.PromotionCode, plan.Amount, plan.Currency, ct)).PromotionCodeId;
 
         var session = await stripe.CreateCheckoutSessionAsync(new CheckoutSessionSpec(
             CheckoutMode.Subscription,

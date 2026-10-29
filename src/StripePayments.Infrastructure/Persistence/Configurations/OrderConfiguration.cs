@@ -20,6 +20,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         b.Property(x => x.PaymentIntentId).HasMaxLength(255);
         b.HasIndex(x => x.CheckoutSessionId).IsUnique();
         b.HasIndex(x => x.PaymentIntentId);
+        b.Property(x => x.ConnectedAccountId).HasMaxLength(255);
         b.Ignore(x => x.RefundableAmount);
     }
 }
