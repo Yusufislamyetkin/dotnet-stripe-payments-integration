@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders · Stripe Payments Demo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="orders">
+<header>
+  <strong>Stripe Payments Demo</strong>
+  <a href="index.html">Pricing</a>
+  <a href="orders.html" class="active">Orders &amp; subscriptions</a>
+  <a href="connect.html">Sellers (Connect)</a>
+  <a href="swagger">API</a>
+</header>
+<main>
+  <p class="muted">Everything on this page is written by Stripe webhooks, never by the buttons directly. Refresh after an action.</p>
+
+  <h2>Orders</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Created</th><th>Product</th><th>Email</th><th>Charged</th><th>Refunded</th><th>Code</th><th>Status</th><th></th></tr></thead>
+    <tbody id="orders"></tbody>
+  </table></div>
+
+  <h2>Subscriptions</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Email</th><th>Plan</th><th>Status</th><th>Trial ends</th><th>Period ends</th><th></th></tr></thead>
+    <tbody id="subscriptions"></tbody>
+  </table></div>
+
+  <h2>Outbox (integration events)</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Created</th><th>Type</th><th>Status</th><th>Attempts</th><th>Next attempt</th><th>Last error</th></tr></thead>
+    <tbody id="outbox"></tbody>
+  </table></div>
+</main>
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

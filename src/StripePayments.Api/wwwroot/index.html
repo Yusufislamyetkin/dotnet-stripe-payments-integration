@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pricing · Stripe Payments Demo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="pricing">
+<header>
+  <strong>Stripe Payments Demo</strong>
+  <a href="index.html" class="active">Pricing</a>
+  <a href="orders.html">Orders &amp; subscriptions</a>
+  <a href="connect.html">Sellers (Connect)</a>
+  <a href="swagger">API</a>
+</header>
+<main>
+  <p class="muted">Test mode only. Pay with card <code>4242 4242 4242 4242</code>, any future date, any CVC.</p>
+  <div class="toolbar">
+    <input id="email" type="email" placeholder="Email (optional)">
+    <input id="coupon" placeholder="Promotion code (e.g. WELCOME10)">
+    <label class="muted">Sell on behalf of <select id="seller"></select></label>
+  </div>
+
+  <h2>One-time products</h2>
+  <div id="products" class="grid"></div>
+
+  <h2>Subscriptions</h2>
+  <div id="plans" class="grid"></div>
+</main>
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
