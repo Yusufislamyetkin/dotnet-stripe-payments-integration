@@ -9,6 +9,18 @@ public sealed class CatalogOptions
 
     public List<ProductOption> Products { get; init; } = [];
     public List<PlanOption> Plans { get; init; } = [];
+
+    /// <summary>Demo promotion codes created in Stripe test mode on startup.</summary>
+    public List<CouponOption> Coupons { get; init; } = [];
+}
+
+public sealed class CouponOption
+{
+    public string Code { get; init; } = default!;
+    public decimal? PercentOff { get; init; }
+    public long? AmountOff { get; init; }
+    public string? Currency { get; init; }
+    public long? MinimumAmount { get; init; }
 }
 
 public sealed class ProductOption

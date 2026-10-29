@@ -1,4 +1,6 @@
 using StripePayments.Application.Abstractions;
+using StripePayments.Application.Catalog;
+using StripePayments.Application.Coupons;
 
 namespace StripePayments.UnitTests.TestSupport;
 
@@ -28,6 +30,13 @@ public sealed class FakeStripeGateway : IStripeGateway
         Calls.Add($"cancel:{subscriptionId}:{atPeriodEnd}");
         return Task.CompletedTask;
     }
+
+    public Dictionary<string, PromotionCodeInfo> PromotionCodes { get; } = [];
+
+    public Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct) =>
+        Task.FromResult(PromotionCodes.GetValueOrDefault(code));
+
+    public Task EnsurePromotionCodeAsync(CouponOption coupon, CancellationToken ct) => Task.CompletedTask;
 
     public Task ChangeSubscriptionPriceAsync(string subscriptionId, string newPriceId, CancellationToken ct)
     {

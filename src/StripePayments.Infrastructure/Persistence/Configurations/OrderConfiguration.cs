@@ -13,6 +13,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         b.Property(x => x.ProductSku).HasMaxLength(64);
         b.Property(x => x.ProductName).HasMaxLength(200);
         b.Property(x => x.CustomerEmail).HasMaxLength(320);
+        b.Property(x => x.PromotionCode).HasMaxLength(64);
         b.Property(x => x.Currency).HasMaxLength(3);
         b.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
         b.Property(x => x.CheckoutSessionId).HasMaxLength(255);

@@ -2,7 +2,9 @@ using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;
 using StripePayments.Application.Abstractions;
+using StripePayments.Application.Catalog;
 using StripePayments.Application.Common;
+using StripePayments.Application.Coupons;
 
 namespace StripePayments.Infrastructure.Stripe;
 
@@ -52,6 +54,11 @@ public sealed class StripeGateway(IOptions<StripeOptions> options) : IStripeGate
             Metadata = metadata
         };
 
+        if (spec.PromotionCodeId is null)
+            create.AllowPromotionCodes = true;
+        else
+            create.Discounts = [new SessionDiscountOptions { PromotionCode = spec.PromotionCodeId }];
+
         if (spec.Mode == CheckoutMode.Payment)
             create.PaymentIntentData = new SessionPaymentIntentDataOptions { Metadata = metadata };
         else
@@ -87,6 +94,47 @@ public sealed class StripeGateway(IOptions<StripeOptions> options) : IStripeGate
             ProrationBehavior = "create_prorations",
             CancelAtPeriodEnd = false
         }, cancellationToken: ct);
+    });
+
+    public Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct) => Call(async () =>
+    {
+        var list = await new PromotionCodeService(Client).ListAsync(new PromotionCodeListOptions { Code = code, Limit = 1 }, cancellationToken: ct);
+        if (list.Data.FirstOrDefault() is not { } p)
+            return null;
+
+        return new PromotionCodeInfo(
+            p.Id, p.Code, p.Active, p.Coupon.Valid, p.Coupon.PercentOff, p.Coupon.AmountOff, p.Coupon.Currency,
+            p.ExpiresAt is { } e ? new DateTimeOffset(DateTime.SpecifyKind(e, DateTimeKind.Utc)) : null,
+            p.MaxRedemptions, p.TimesRedeemed, p.Restrictions?.MinimumAmount, p.Restrictions?.MinimumAmountCurrency);
+    });
+
+    public Task EnsurePromotionCodeAsync(CouponOption coupon, CancellationToken ct) => Call(async () =>
+    {
+        var promotionCodes = new PromotionCodeService(Client);
+        var existing = await promotionCodes.ListAsync(new PromotionCodeListOptions { Code = coupon.Code, Limit = 1 }, cancellationToken: ct);
+        if (existing.Data.Count > 0)
+            return existing.Data[0].Id;
+
+        var created = await new global::Stripe.CouponService(Client).CreateAsync(new CouponCreateOptions
+        {
+            Name = coupon.Code,
+            PercentOff = coupon.PercentOff,
+            AmountOff = coupon.AmountOff,
+            Currency = coupon.AmountOff is null ? null : coupon.Currency,
+            Duration = "once"
+        }, cancellationToken: ct);
+
+        var promotionCode = await promotionCodes.CreateAsync(new PromotionCodeCreateOptions
+        {
+            Coupon = created.Id,
+            Code = coupon.Code,
+            Restrictions = coupon.MinimumAmount is null ? null : new PromotionCodeRestrictionsOptions
+            {
+                MinimumAmount = coupon.MinimumAmount,
+                MinimumAmountCurrency = coupon.Currency ?? "usd"
+            }
+        }, cancellationToken: ct);
+        return promotionCode.Id;
     });
 
     private static async Task<T> Call<T>(Func<Task<T>> action)

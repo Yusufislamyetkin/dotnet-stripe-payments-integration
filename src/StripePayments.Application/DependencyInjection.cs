@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Common;
+using StripePayments.Application.Coupons;
 using StripePayments.Application.Orders;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Application.Webhooks;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<OrderQueries>();
         services.AddScoped<WebhookProcessor>();
         services.AddScoped<SubscriptionManager>();
+        services.AddScoped<CouponService>();
         return services;
     }
 }

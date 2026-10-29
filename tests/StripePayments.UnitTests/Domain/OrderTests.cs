@@ -10,7 +10,7 @@ public class OrderTests
 
     private static Order PaidOrder(long amount = 5000)
     {
-        var order = Order.CreatePending(Product.Create("sku", "Name", "", amount, "USD"), null, Now);
+        var order = Order.CreatePending(Product.Create("sku", "Name", "", amount, "USD"), null, null, Now);
         order.MarkPaid("pi_1", amount, "a@b.com", Now);
         return order;
     }
@@ -18,7 +18,7 @@ public class OrderTests
     [Fact]
     public void MarkPaid_is_applied_once()
     {
-        var order = Order.CreatePending(Product.Create("sku", "Name", "", 5000, "usd"), null, Now);
+        var order = Order.CreatePending(Product.Create("sku", "Name", "", 5000, "usd"), null, null, Now);
 
         Assert.True(order.MarkPaid("pi_1", 4500, "a@b.com", Now));
         Assert.False(order.MarkPaid("pi_2", 9999, "x@y.com", Now));
@@ -56,7 +56,7 @@ public class OrderTests
     [Fact]
     public void Refunding_a_pending_order_throws()
     {
-        var order = Order.CreatePending(Product.Create("sku", "Name", "", 5000, "usd"), null, Now);
+        var order = Order.CreatePending(Product.Create("sku", "Name", "", 5000, "usd"), null, null, Now);
 
         Assert.Throws<DomainException>(() => order.ApplyRefundedTotal(100, Now));
     }

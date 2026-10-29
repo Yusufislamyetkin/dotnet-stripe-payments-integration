@@ -15,7 +15,7 @@ public class WebhookProcessorTests
 
     private static async Task<Order> SeedPendingOrder(AppDbContext db, string sessionId = "cs_1")
     {
-        var order = Order.CreatePending(Product.Create("sku", "Item", "", 5000, "usd"), null, DateTimeOffset.UtcNow);
+        var order = Order.CreatePending(Product.Create("sku", "Item", "", 5000, "usd"), null, null, DateTimeOffset.UtcNow);
         order.AttachCheckoutSession(sessionId);
         db.Orders.Add(order);
         await db.SaveChangesAsync();

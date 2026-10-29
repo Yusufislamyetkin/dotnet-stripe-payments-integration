@@ -1,6 +1,7 @@
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
+using StripePayments.Application.Coupons;
 using StripePayments.Application.Orders;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Application.Webhooks;
@@ -20,6 +21,12 @@ public static class EndpointRegistration
         checkout.MapPost("/one-time", (OneTimeCheckoutRequest request, CheckoutService service, CancellationToken ct) =>
                 service.CreateOneTimeAsync(request, ct))
             .Validate<OneTimeCheckoutRequest>();
+
+        api.MapPost("/coupons/validate", (ValidateCouponRequest request, CouponService coupons, CancellationToken ct) =>
+                coupons.ValidateAsync(request, ct))
+            .Validate<ValidateCouponRequest>()
+            .WithTags("Coupons")
+            .WithSummary("Checks a promotion code against a product or plan and returns the discounted price");
 
         var orders = api.MapGroup("/orders").WithTags("Orders");
         orders.MapGet("/", (OrderQueries q, CancellationToken ct, int take = 50) => q.ListAsync(take, ct));

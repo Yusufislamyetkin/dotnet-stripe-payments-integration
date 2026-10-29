@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Common;
+using StripePayments.Application.Coupons;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Subscriptions;
@@ -14,7 +15,7 @@ public class SubscriptionManagerTests
     private readonly FakeStripeGateway _stripe = new();
 
     private SubscriptionManager Manager(AppDbContext db) =>
-        new(db, _stripe, Options.Create(new AppOptions { PublicBaseUrl = "https://shop.test" }));
+        new(db, _stripe, new CouponService(db, _stripe, TimeProvider.System), Options.Create(new AppOptions { PublicBaseUrl = "https://shop.test" }));
 
     private static async Task<(AppDbContext Db, Subscription Sub)> Seed(SubscriptionStatus status = SubscriptionStatus.Active)
     {

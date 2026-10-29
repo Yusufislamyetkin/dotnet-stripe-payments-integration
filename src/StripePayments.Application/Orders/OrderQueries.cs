@@ -10,6 +10,7 @@ public sealed record OrderDto(
     string ProductSku,
     string ProductName,
     string? CustomerEmail,
+    string? PromotionCode,
     long Amount,
     long AmountRefunded,
     string Currency,
@@ -17,7 +18,7 @@ public sealed record OrderDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? PaidAt)
 {
-    public static OrderDto From(Order o) => new(o.Id, o.ProductSku, o.ProductName, o.CustomerEmail, o.Amount,
+    public static OrderDto From(Order o) => new(o.Id, o.ProductSku, o.ProductName, o.CustomerEmail, o.PromotionCode, o.Amount,
         o.AmountRefunded, o.Currency, o.Status.ToString(), o.CreatedAt, o.PaidAt);
 }
 

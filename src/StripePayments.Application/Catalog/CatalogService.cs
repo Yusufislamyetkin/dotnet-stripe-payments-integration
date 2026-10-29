@@ -73,6 +73,10 @@ public sealed class CatalogService(
                 new PriceSpec(plan.StripeLookupKey, plan.Name, plan.Amount, plan.Currency, plan.StripeInterval), ct));
 
         await db.SaveChangesAsync(ct);
+
+        foreach (var coupon in options.Value.Coupons)
+            await stripe.EnsurePromotionCodeAsync(coupon, ct);
+
         logger.LogInformation("Catalog synced with Stripe");
     }
 }

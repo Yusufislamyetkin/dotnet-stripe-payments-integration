@@ -1,3 +1,6 @@
+using StripePayments.Application.Catalog;
+using StripePayments.Application.Coupons;
+
 namespace StripePayments.Application.Abstractions;
 
 /// <summary>
@@ -19,6 +22,12 @@ public interface IStripeGateway
 
     /// <summary>Swaps the subscription's price with proration (upgrade or downgrade).</summary>
     Task ChangeSubscriptionPriceAsync(string subscriptionId, string newPriceId, CancellationToken ct);
+
+    /// <summary>Looks up a customer-facing promotion code (case-sensitive, as in Stripe).</summary>
+    Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct);
+
+    /// <summary>Creates the coupon and promotion code if no promotion code with this code exists yet.</summary>
+    Task EnsurePromotionCodeAsync(CouponOption coupon, CancellationToken ct);
 }
 
 public sealed record PriceSpec(string LookupKey, string ProductName, long UnitAmount, string Currency, string? RecurringInterval = null);
@@ -34,6 +43,9 @@ public sealed record CheckoutSessionSpec(
     IReadOnlyDictionary<string, string> Metadata)
 {
     public int? TrialDays { get; init; }
+
+    /// <summary>Pre-applied promotion code. When null, Checkout shows its own promotion code field.</summary>
+    public string? PromotionCodeId { get; init; }
 }
 
 public sealed record CheckoutSessionResult(string SessionId, string Url);

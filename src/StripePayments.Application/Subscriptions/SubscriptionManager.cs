@@ -4,12 +4,13 @@ using Microsoft.Extensions.Options;
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Common;
+using StripePayments.Application.Coupons;
 using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Subscriptions;
 
 namespace StripePayments.Application.Subscriptions;
 
-public sealed record SubscriptionCheckoutRequest(string PlanCode, string? Email);
+public sealed record SubscriptionCheckoutRequest(string PlanCode, string? Email, string? PromotionCode = null);
 
 public sealed record CancelSubscriptionRequest(bool AtPeriodEnd = true);
 
@@ -39,6 +40,7 @@ public sealed class SubscriptionCheckoutRequestValidator : AbstractValidator<Sub
     {
         RuleFor(x => x.PlanCode).NotEmpty().MaximumLength(64);
         RuleFor(x => x.Email).EmailAddress().When(x => !string.IsNullOrEmpty(x.Email));
+        RuleFor(x => x.PromotionCode).Matches("^[A-Za-z0-9_-]{3,64}$").When(x => !string.IsNullOrEmpty(x.PromotionCode));
     }
 }
 
@@ -51,7 +53,7 @@ public sealed class ChangePlanRequestValidator : AbstractValidator<ChangePlanReq
 /// Subscription commands. Each one asks Stripe to make the change and returns; the local row is
 /// updated when the resulting customer.subscription.* webhook arrives.
 /// </summary>
-public sealed class SubscriptionManager(IAppDbContext db, IStripeGateway stripe, IOptions<AppOptions> app)
+public sealed class SubscriptionManager(IAppDbContext db, IStripeGateway stripe, CouponService coupons, IOptions<AppOptions> app)
 {
     public const string PlanCodeMetadataKey = "plan_code";
 
@@ -59,6 +61,9 @@ public sealed class SubscriptionManager(IAppDbContext db, IStripeGateway stripe,
     {
         if (!stripe.IsConfigured) throw new StripeNotConfiguredException();
         var plan = await GetSyncedPlan(request.PlanCode, ct);
+        var promotionCodeId = string.IsNullOrEmpty(request.PromotionCode)
+            ? null
+            : await coupons.ResolveForCheckoutAsync(request.PromotionCode, plan.Amount, plan.Currency, ct);
 
         var session = await stripe.CreateCheckoutSessionAsync(new CheckoutSessionSpec(
             CheckoutMode.Subscription,
@@ -68,7 +73,8 @@ public sealed class SubscriptionManager(IAppDbContext db, IStripeGateway stripe,
             $"{BaseUrl}/cancel.html",
             new Dictionary<string, string> { [PlanCodeMetadataKey] = plan.Code })
         {
-            TrialDays = plan.TrialDays > 0 ? plan.TrialDays : null
+            TrialDays = plan.TrialDays > 0 ? plan.TrialDays : null,
+            PromotionCodeId = promotionCodeId
         }, ct);
 
         return new CheckoutResponse(null, session.SessionId, session.Url);

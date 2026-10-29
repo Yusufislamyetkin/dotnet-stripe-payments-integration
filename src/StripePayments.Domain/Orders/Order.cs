@@ -23,8 +23,9 @@ public sealed class Order
     public string ProductSku { get; private set; } = default!;
     public string ProductName { get; private set; } = default!;
     public string? CustomerEmail { get; private set; }
+    public string? PromotionCode { get; private set; }
 
-    /// <summary>Amount in minor units (cents). List price until paid, then the amount actually charged.</summary>
+    /// <summary>Amount in minor units (cents). List price until paid, then the amount actually charged (after discounts).</summary>
     public long Amount { get; private set; }
     public long AmountRefunded { get; private set; }
     public string Currency { get; private set; } = default!;
@@ -39,8 +40,9 @@ public sealed class Order
 
     public long RefundableAmount => Status is OrderStatus.Paid or OrderStatus.PartiallyRefunded ? Amount - AmountRefunded : 0;
 
-    public static Order CreatePending(Product product, string? customerEmail, DateTimeOffset now) => new()
+    public static Order CreatePending(Product product, string? customerEmail, string? promotionCode, DateTimeOffset now) => new()
     {
+        PromotionCode = promotionCode,
         Id = Guid.NewGuid(),
         ProductSku = product.Sku,
         ProductName = product.Name,
