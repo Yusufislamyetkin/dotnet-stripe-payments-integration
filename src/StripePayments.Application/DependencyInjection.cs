@@ -6,6 +6,7 @@ using StripePayments.Application.Checkout;
 using StripePayments.Application.Common;
 using StripePayments.Application.Coupons;
 using StripePayments.Application.Orders;
+using StripePayments.Application.Refunds;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Application.Webhooks;
 
@@ -27,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<WebhookProcessor>();
         services.AddScoped<SubscriptionManager>();
         services.AddScoped<CouponService>();
+        services.AddScoped<RefundService>();
         return services;
     }
 }

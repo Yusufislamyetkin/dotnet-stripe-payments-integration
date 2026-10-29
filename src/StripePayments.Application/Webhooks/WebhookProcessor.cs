@@ -34,6 +34,7 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
             SubscriptionChanged e => await OnSubscriptionChanged(e, evt.Created, ct),
             InvoiceEvent e when evt.Type == StripeEventTypes.InvoicePaid => await OnInvoice(e, paid: true, ct),
             InvoiceEvent e when evt.Type == StripeEventTypes.InvoicePaymentFailed => await OnInvoice(e, paid: false, ct),
+            ChargeRefunded e => await OnChargeRefunded(e, ct),
             _ => false
         };
 
@@ -127,6 +128,23 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
         else
             subscription.RecordPaymentFailure(Now);
         return true;
+    }
+
+    private async Task<bool> OnChargeRefunded(ChargeRefunded e, CancellationToken ct)
+    {
+        if (e.PaymentIntentId is null)
+            return false;
+
+        var order = await db.Orders.SingleOrDefaultAsync(o => o.PaymentIntentId == e.PaymentIntentId, ct);
+        if (order is null)
+        {
+            logger.LogWarning("No order found for refunded payment intent {PaymentIntentId}", e.PaymentIntentId);
+            return false;
+        }
+
+        var before = order.AmountRefunded;
+        order.ApplyRefundedTotal(e.AmountRefunded, Now);
+        return order.AmountRefunded != before;
     }
 
     private async Task<Subscription> GetOrCreateSubscription(string subscriptionId, string customerId, CancellationToken ct)

@@ -31,6 +31,14 @@ public sealed class FakeStripeGateway : IStripeGateway
         return Task.CompletedTask;
     }
 
+    public List<(string PaymentIntentId, long Amount, string IdempotencyKey)> Refunds { get; } = [];
+
+    public Task<RefundResult> CreateRefundAsync(string paymentIntentId, long amount, string? reason, string idempotencyKey, CancellationToken ct)
+    {
+        Refunds.Add((paymentIntentId, amount, idempotencyKey));
+        return Task.FromResult(new RefundResult($"re_{Refunds.Count}", "succeeded"));
+    }
+
     public Dictionary<string, PromotionCodeInfo> PromotionCodes { get; } = [];
 
     public Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct) =>

@@ -23,6 +23,8 @@ public interface IStripeGateway
     /// <summary>Swaps the subscription's price with proration (upgrade or downgrade).</summary>
     Task ChangeSubscriptionPriceAsync(string subscriptionId, string newPriceId, CancellationToken ct);
 
+    Task<RefundResult> CreateRefundAsync(string paymentIntentId, long amount, string? reason, string idempotencyKey, CancellationToken ct);
+
     /// <summary>Looks up a customer-facing promotion code (case-sensitive, as in Stripe).</summary>
     Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct);
 
@@ -49,3 +51,5 @@ public sealed record CheckoutSessionSpec(
 }
 
 public sealed record CheckoutSessionResult(string SessionId, string Url);
+
+public sealed record RefundResult(string RefundId, string Status);

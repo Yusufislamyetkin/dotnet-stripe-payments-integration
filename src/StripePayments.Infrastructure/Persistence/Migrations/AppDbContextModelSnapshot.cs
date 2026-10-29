@@ -202,6 +202,43 @@ namespace StripePayments.Infrastructure.Persistence.Migrations
                     b.ToTable("orders", (string)null);
                 });
 
+            modelBuilder.Entity("StripePayments.Domain.Orders.Refund", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("StripeRefundId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("StripeStatus")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("StripeRefundId")
+                        .IsUnique();
+
+                    b.ToTable("refunds", (string)null);
+                });
+
             modelBuilder.Entity("StripePayments.Domain.Subscriptions.Subscription", b =>
                 {
                     b.Property<Guid>("Id")
@@ -290,6 +327,15 @@ namespace StripePayments.Infrastructure.Persistence.Migrations
                     b.HasKey("EventId");
 
                     b.ToTable("processed_stripe_events", (string)null);
+                });
+
+            modelBuilder.Entity("StripePayments.Domain.Orders.Refund", b =>
+                {
+                    b.HasOne("StripePayments.Domain.Orders.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

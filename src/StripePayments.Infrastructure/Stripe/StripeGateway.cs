@@ -96,6 +96,15 @@ public sealed class StripeGateway(IOptions<StripeOptions> options) : IStripeGate
         }, cancellationToken: ct);
     });
 
+    public Task<RefundResult> CreateRefundAsync(string paymentIntentId, long amount, string? reason, string idempotencyKey, CancellationToken ct) => Call(async () =>
+    {
+        var refund = await new RefundService(Client).CreateAsync(
+            new RefundCreateOptions { PaymentIntent = paymentIntentId, Amount = amount, Reason = reason },
+            new RequestOptions { IdempotencyKey = idempotencyKey },
+            ct);
+        return new RefundResult(refund.Id, refund.Status);
+    });
+
     public Task<PromotionCodeInfo?> FindPromotionCodeAsync(string code, CancellationToken ct) => Call(async () =>
     {
         var list = await new PromotionCodeService(Client).ListAsync(new PromotionCodeListOptions { Code = code, Limit = 1 }, cancellationToken: ct);

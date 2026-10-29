@@ -14,6 +14,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<Refund> Refunds => Set<Refund>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
 

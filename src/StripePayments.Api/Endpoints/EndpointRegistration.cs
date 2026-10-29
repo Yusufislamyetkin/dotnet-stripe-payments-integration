@@ -3,6 +3,7 @@ using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Coupons;
 using StripePayments.Application.Orders;
+using StripePayments.Application.Refunds;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Application.Webhooks;
 
@@ -31,6 +32,11 @@ public static class EndpointRegistration
         var orders = api.MapGroup("/orders").WithTags("Orders");
         orders.MapGet("/", (OrderQueries q, CancellationToken ct, int take = 50) => q.ListAsync(take, ct));
         orders.MapGet("/{id:guid}", (Guid id, OrderQueries q, CancellationToken ct) => q.GetAsync(id, ct));
+        orders.MapGet("/{id:guid}/refunds", (Guid id, RefundService refunds, CancellationToken ct) => refunds.ListAsync(id, ct));
+        orders.MapPost("/{id:guid}/refunds", async (Guid id, RefundRequest? request, RefundService refunds, CancellationToken ct) =>
+                Results.Accepted(value: await refunds.RefundAsync(id, request ?? new RefundRequest(), ct)))
+            .Validate<RefundRequest>()
+            .WithSummary("Full (no amount) or partial refund; the order updates when charge.refunded arrives");
 
         var subscriptions = api.MapGroup("/subscriptions").WithTags("Subscriptions");
         subscriptions.MapGet("/", (SubscriptionManager m, CancellationToken ct) => m.ListAsync(ct));

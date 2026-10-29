@@ -23,3 +23,17 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         b.Ignore(x => x.RefundableAmount);
     }
 }
+
+internal sealed class RefundConfiguration : IEntityTypeConfiguration<Refund>
+{
+    public void Configure(EntityTypeBuilder<Refund> b)
+    {
+        b.ToTable("refunds");
+        b.HasKey(x => x.Id);
+        b.HasOne<Order>().WithMany().HasForeignKey(x => x.OrderId);
+        b.Property(x => x.Reason).HasMaxLength(32);
+        b.Property(x => x.StripeRefundId).HasMaxLength(255);
+        b.HasIndex(x => x.StripeRefundId).IsUnique();
+        b.Property(x => x.StripeStatus).HasMaxLength(32);
+    }
+}

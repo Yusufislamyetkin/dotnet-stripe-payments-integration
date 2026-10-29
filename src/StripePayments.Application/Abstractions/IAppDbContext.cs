@@ -13,6 +13,7 @@ public interface IAppDbContext
     DbSet<Plan> Plans { get; }
     DbSet<Customer> Customers { get; }
     DbSet<Order> Orders { get; }
+    DbSet<Refund> Refunds { get; }
     DbSet<Subscription> Subscriptions { get; }
     DbSet<ProcessedStripeEvent> ProcessedStripeEvents { get; }
 
