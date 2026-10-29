@@ -3,6 +3,7 @@ using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Connect;
 using StripePayments.Domain.Customers;
 using StripePayments.Domain.Orders;
+using StripePayments.Domain.Outbox;
 using StripePayments.Domain.Subscriptions;
 using StripePayments.Domain.Webhooks;
 
@@ -18,6 +19,7 @@ public interface IAppDbContext
     DbSet<Subscription> Subscriptions { get; }
     DbSet<ConnectedAccount> ConnectedAccounts { get; }
     DbSet<ProcessedStripeEvent> ProcessedStripeEvents { get; }
+    DbSet<OutboxMessage> OutboxMessages { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

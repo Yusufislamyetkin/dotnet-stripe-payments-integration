@@ -3,7 +3,9 @@ using StripePayments.Application.Catalog;
 using StripePayments.Application.Checkout;
 using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
+using Microsoft.Extensions.Options;
 using StripePayments.Application.Orders;
+using StripePayments.Application.Outbox;
 using StripePayments.Application.Refunds;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Application.Webhooks;
@@ -69,6 +71,13 @@ public static class EndpointRegistration
         connect.MapPost("/{id:guid}/onboarding-link", (Guid id, ConnectService s, CancellationToken ct) => s.CreateOnboardingLinkAsync(id, ct));
         connect.MapGet("/{id:guid}/payouts", (Guid id, ConnectService s, CancellationToken ct) => s.GetPayoutStatusAsync(id, ct))
             .WithSummary("Live balance and recent payouts of the connected account");
+
+        api.MapGet("/outbox", (OutboxProcessor outbox, CancellationToken ct) => outbox.ListAsync(ct))
+            .WithTags("Outbox")
+            .WithSummary("Recent integration events and their delivery status");
+
+        if (app.ServiceProvider.GetRequiredService<IOptions<OutboxOptions>>().Value.EnableDevSink)
+            api.MapDevWebhookSink();
 
         api.MapPost("/webhooks/stripe", HandleStripeWebhook)
             .WithTags("Webhooks")

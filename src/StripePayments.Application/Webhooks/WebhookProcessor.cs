@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using StripePayments.Application.Abstractions;
 using StripePayments.Application.Checkout;
+using StripePayments.Application.Outbox;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Domain.Customers;
 using StripePayments.Domain.Orders;
@@ -86,7 +87,12 @@ public sealed class WebhookProcessor(IAppDbContext db, TimeProvider clock, ILogg
             return false;
         }
 
-        return order.MarkPaid(e.PaymentIntentId, e.AmountTotal ?? order.Amount, e.CustomerEmail, Now);
+        if (!order.MarkPaid(e.PaymentIntentId, e.AmountTotal ?? order.Amount, e.CustomerEmail, Now))
+            return false;
+
+        // Transactional outbox: saved in the same SaveChanges as the order and the event marker.
+        db.OutboxMessages.Add(IntegrationEvents.OrderPaidMessage(order, Now));
+        return true;
     }
 
     private async Task<bool> AttachSubscriptionCheckout(CheckoutSessionCompleted e, CancellationToken ct)

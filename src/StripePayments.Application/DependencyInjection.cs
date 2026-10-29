@@ -7,6 +7,7 @@ using StripePayments.Application.Common;
 using StripePayments.Application.Connect;
 using StripePayments.Application.Coupons;
 using StripePayments.Application.Orders;
+using StripePayments.Application.Outbox;
 using StripePayments.Application.Refunds;
 using StripePayments.Application.Subscriptions;
 using StripePayments.Application.Webhooks;
@@ -20,6 +21,7 @@ public static class DependencyInjection
         services.Configure<AppOptions>(configuration.GetSection(AppOptions.Section));
         services.Configure<CatalogOptions>(configuration.GetSection(CatalogOptions.Section));
         services.Configure<ConnectOptions>(configuration.GetSection(ConnectOptions.Section));
+        services.Configure<OutboxOptions>(configuration.GetSection(OutboxOptions.Section));
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddSingleton(TimeProvider.System);
@@ -32,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<CouponService>();
         services.AddScoped<RefundService>();
         services.AddScoped<ConnectService>();
+        services.AddScoped<OutboxProcessor>();
         return services;
     }
 }

@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using StripePayments.Application.Abstractions;
+using StripePayments.Application.Outbox;
+using StripePayments.Infrastructure.Outbox;
 using StripePayments.Infrastructure.Persistence;
 using StripePayments.Infrastructure.Startup;
 using StripePayments.Infrastructure.Stripe;
@@ -26,7 +29,12 @@ public static class DependencyInjection
         services.AddSingleton<IStripeGateway, StripeGateway>();
         services.AddSingleton<IStripeEventParser, StripeEventParser>();
 
+        services.AddHttpClient<IOutboxPublisher, HttpOutboxPublisher>((sp, http) =>
+            http.Timeout = TimeSpan.FromSeconds(sp.GetRequiredService<IOptions<OutboxOptions>>().Value.TimeoutSeconds));
+
+        // Order matters: migrations run before the dispatcher starts polling.
         services.AddHostedService<DatabaseInitializer>();
+        services.AddHostedService<OutboxDispatcher>();
         return services;
     }
 }

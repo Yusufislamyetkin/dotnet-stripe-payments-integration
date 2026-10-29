@@ -4,6 +4,7 @@ using StripePayments.Domain.Catalog;
 using StripePayments.Domain.Connect;
 using StripePayments.Domain.Customers;
 using StripePayments.Domain.Orders;
+using StripePayments.Domain.Outbox;
 using StripePayments.Domain.Subscriptions;
 using StripePayments.Domain.Webhooks;
 
@@ -19,6 +20,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<ConnectedAccount> ConnectedAccounts => Set<ConnectedAccount>();
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
