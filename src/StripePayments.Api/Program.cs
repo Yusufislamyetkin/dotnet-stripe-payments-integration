@@ -20,7 +20,12 @@ builder.Services.AddSingleton<DevWebhookSink>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(o => o.CustomSchemaIds(t => t.FullName?.Replace('+', '.')));
+builder.Services.AddSwaggerGen(o =>
+{
+    o.SwaggerDoc("v1", new() { Title = "Stripe Payments Integration API", Version = "v1",
+        Description = "Stripe Checkout, subscriptions, coupons, refunds, Connect and idempotent webhooks (test mode)." });
+    o.CustomSchemaIds(t => t.FullName?.Replace('+', '.'));
+});
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Postgres")!, name: "postgres", tags: ["ready"]);
 

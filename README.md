@@ -6,13 +6,27 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
+![dotnet-stripe-payments-integration](docs/images/banner.png)
+
 **A production-style Stripe integration in ASP.NET Core: Checkout, subscriptions, coupons, refunds, Connect marketplaces and reliable webhooks that push paid orders to Make.com, Zapier or n8n.**
 
 ---
 
 ## Demo
 
-> 📸 *Screenshots / GIF coming soon:* `docs/images/checkout-flow.gif` (pricing → Stripe Checkout → order marked paid → row appears in Google Sheets via Make.com).
+**Pricing page**: one-time products and subscription plans with trials, promotion code check and an optional Connect seller.
+
+![Pricing page](docs/images/pricing.png)
+
+**Orders & subscriptions**: every row here is written by Stripe webhooks, never by the browser. The outbox table shows each `order.paid` event and how many delivery attempts it took.
+
+![Orders, subscriptions and outbox](docs/images/orders.png)
+
+**API**: every endpoint is documented in Swagger.
+
+![Swagger UI](docs/images/swagger.png)
+
+<sub>Screenshots were taken from the running app with sample data loaded into the local database.</sub>
 
 ---
 
@@ -129,7 +143,7 @@ Without a key the app still starts: health checks, Swagger and the UI work, and 
 | <http://localhost:8080/health/ready> | Readiness (PostgreSQL) |
 | <http://localhost:8080/api/dev/webhook-sink> | Demo receiver for outbox events (enabled in compose only) |
 
-> Port 5432 already taken? `POSTGRES_PORT=5433 docker compose up --build`.
+> Port 5432 or 8080 already taken? `POSTGRES_PORT=5433 API_PORT=8090 docker compose up --build`.
 > Customer Portal: in test mode, save the default portal settings once at <https://dashboard.stripe.com/test/settings/billing/portal>.
 
 ### Running without Docker
@@ -308,7 +322,7 @@ This repository contains no infrastructure-as-code; the steps above are the manu
 - The concurrent-duplicate path (two copies of one event committing at the same time) relies on the primary key and is not covered by an automated test yet.
 - Checkout Sessions that expire (`checkout.session.expired`) leave the order `Pending`.
 - Connect uses destination charges only (no separate charges and transfers).
-- Screenshots/GIF for the demo section.
+- A GIF of a live checkout against Stripe for the demo section.
 
 ---
 
