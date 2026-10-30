@@ -6,25 +6,28 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 
-![dotnet-stripe-payments-integration](docs/images/banner.png)
-
 **A production-style Stripe integration in ASP.NET Core: Checkout, subscriptions, coupons, refunds, Connect marketplaces and reliable webhooks that push paid orders to Make.com, Zapier or n8n.**
+
+![Take payments with Stripe. Never lose or double-count one.](docs/images/upwork/upwork-01-hero.png)
 
 ---
 
 ## Demo
 
-**Pricing page**: one-time products and subscription plans with trials, promotion code check and an optional Connect seller.
-
-![Pricing page](docs/images/pricing.png)
-
-**Orders & subscriptions**: every row here is written by Stripe webhooks, never by the browser. The outbox table shows each `order.paid` event and how many delivery attempts it took.
-
-![Orders, subscriptions and outbox](docs/images/orders.png)
-
-**API**: every endpoint is documented in Swagger.
-
-![Swagger UI](docs/images/swagger.png)
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/upwork/upwork-02-reliable-webhooks.png" alt="Webhook reliability: signature check, one transaction, retried delivery"><br><sub><b>Reliable webhooks</b>: verified, applied once, and paid orders retried until your automation accepts them.</sub></td>
+    <td width="50%"><img src="docs/images/upwork/upwork-04-pricing.png" alt="Pricing page with products, plans, trials and coupons"><br><sub><b>Pricing page</b>: one-time products, monthly/yearly plans with free trials, promo code check, optional Connect seller.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/orders.png" alt="Orders, subscriptions and outbox status"><br><sub><b>Orders &amp; subscriptions</b>: every status is written by Stripe webhooks; the outbox shows delivery attempts.</sub></td>
+    <td width="50%"><img src="docs/images/upwork/upwork-03-features.png" alt="Feature overview"><br><sub><b>Feature overview</b>: payments, subscriptions, coupons, refunds, Connect, shipped with tests and CI.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/swagger.png" alt="Swagger UI"><br><sub><b>API</b>: every endpoint documented in Swagger.</sub></td>
+    <td width="50%"><img src="docs/images/pricing.png" alt="Pricing page full size"><br><sub><b>Storefront</b>: plain HTML/JS front end served by the API.</sub></td>
+  </tr>
+</table>
 
 <sub>Screenshots were taken from the running app with sample data loaded into the local database.</sub>
 
